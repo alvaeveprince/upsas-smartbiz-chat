@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Ordinary Store — Skincare Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fdf8f4;
+    --blush: #f2ddd5;
+    --rose: #d4857a;
+    --deep-rose: #b5635a;
+    --petal: #f9ece7;
+    --muted: #9e8680;
+    --charcoal: #2d2420;
+    --soft-gray: #ede8e5;
+    --white: #ffffff;
+    --shadow: rgba(45, 36, 32, 0.08);
+    --bot-bubble: #ffffff;
+    --user-bubble: linear-gradient(135deg, #d4857a, #b5635a);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Background decorative elements */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -120px; right: -120px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, #f2ddd5 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -100px; left: -100px;
+    width: 350px; height: 350px;
+    background: radial-gradient(circle, #fce8e2 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* APP WRAPPER */
+  .app-wrapper {
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    height: 94vh;
+    max-height: 860px;
+  }
+
+  /* HEADER */
+  .chat-header {
+    background: var(--white);
+    border-radius: 24px 24px 0 0;
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 2px 20px var(--shadow);
+    border-bottom: 1px solid var(--soft-gray);
+    position: relative;
+  }
+
+  .header-avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blush), var(--rose));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 3px 12px rgba(212,133,122,0.35);
+  }
+
+  .header-info h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--charcoal);
+    letter-spacing: 0.01em;
+  }
+  .header-info p {
+    font-size: 12px;
+    color: var(--rose);
+    font-weight: 500;
+    margin-top: 2px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .online-dot {
+    width: 7px; height: 7px;
+    background: #5cb85c;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  .header-badge {
+    margin-left: auto;
+    background: var(--petal);
+    border: 1px solid var(--blush);
+    color: var(--deep-rose);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* CHAT BODY */
+  .chat-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 16px;
+    background: var(--cream);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    scroll-behavior: smooth;
+  }
+  .chat-body::-webkit-scrollbar { width: 4px; }
+  .chat-body::-webkit-scrollbar-track { background: transparent; }
+  .chat-body::-webkit-scrollbar-thumb { background: var(--blush); border-radius: 4px; }
+
+  /* DATE STAMP */
+  .date-stamp {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    padding: 4px 0 8px;
+  }
+
+  /* MESSAGES */
+  .msg-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: msgIn 0.35s ease forwards;
+  }
+  @keyframes msgIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .msg-row.user { flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blush), var(--rose));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .msg-row.user .msg-avatar {
+    background: linear-gradient(135deg, #d4857a, #b5635a);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .bubble {
+    max-width: 78%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--charcoal);
+    box-shadow: 0 2px 10px var(--shadow);
+    word-break: break-word;
+  }
+  .msg-row.bot .bubble {
+    background: var(--bot-bubble);
+    border-bottom-left-radius: 4px;
+  }
+  .msg-row.user .bubble {
+    background: var(--user-bubble);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .bubble strong { font-weight: 600; }
+  .bubble .product-tag {
+    display: inline-block;
+    background: var(--petal);
+    border: 1px solid var(--blush);
+    color: var(--deep-rose);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 20px;
+    margin: 3px 3px 3px 0;
+  }
+  .bubble .price-tag {
+    font-family: 'DM Serif Display', serif;
+    color: var(--deep-rose);
+    font-size: 15px;
+  }
+  .bubble hr {
+    border: none; border-top: 1px solid var(--soft-gray);
+    margin: 10px 0;
+  }
+  .bubble .routine-step {
+    display: flex; align-items: flex-start; gap: 8px;
+    margin: 5px 0;
+    font-size: 13px;
+  }
+  .bubble .step-num {
+    background: var(--blush);
+    color: var(--deep-rose);
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* QUICK REPLIES */
+  .quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0 4px 38px;
+    animation: msgIn 0.4s ease forwards 0.1s;
+    opacity: 0;
+  }
+  .qr-btn {
+    background: var(--white);
+    border: 1.5px solid var(--blush);
+    color: var(--charcoal);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px var(--shadow);
+  }
+  .qr-btn:hover {
+    background: var(--petal);
+    border-color: var(--rose);
+    color: var(--deep-rose);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(212,133,122,0.2);
+  }
+  .qr-btn:active { transform: translateY(0); }
+
+  /* TYPING INDICATOR */
+  .typing-row {
+    display: flex; align-items: flex-end; gap: 8px;
+    animation: msgIn 0.3s ease forwards;
+  }
+  .typing-bubble {
+    background: var(--white);
+    border-radius: 18px 18px 18px 4px;
+    padding: 14px 18px;
+    display: flex; gap: 5px; align-items: center;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+  .typing-dot {
+    width: 7px; height: 7px;
+    background: var(--rose);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+    opacity: 0.6;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.6; }
+    30% { transform: translateY(-6px); opacity: 1; }
+  }
+
+  /* INPUT AREA */
+  .chat-footer {
+    background: var(--white);
+    border-radius: 0 0 24px 24px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    box-shadow: 0 -2px 20px var(--shadow);
+    border-top: 1px solid var(--soft-gray);
+  }
+  .chat-input {
+    flex: 1;
+    border: 1.5px solid var(--soft-gray);
+    border-radius: 24px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--charcoal);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .chat-input:focus {
+    border-color: var(--rose);
+    box-shadow: 0 0 0 3px rgba(212,133,122,0.12);
+    background: var(--white);
+  }
+  .chat-input::placeholder { color: var(--muted); }
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--rose), var(--deep-rose));
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 12px rgba(212,133,122,0.4);
+    flex-shrink: 0;
+  }
+  .send-btn:hover { transform: scale(1.07); box-shadow: 0 5px 16px rgba(212,133,122,0.5); }
+  .send-btn:active { transform: scale(0.95); }
+
+  /* PRODUCT CARD */
+  .product-card {
+    background: var(--petal);
+    border: 1px solid var(--blush);
+    border-radius: 12px;
+    padding: 10px 13px;
+    margin: 5px 0;
+  }
+  .product-card .p-name { font-weight: 600; font-size: 13.5px; color: var(--charcoal); }
+  .product-card .p-benefit { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+  .product-card .p-price { font-family: 'DM Serif Display', serif; color: var(--deep-rose); font-size: 15px; margin-top: 4px; }
+
+  /* WHATSAPP LINK */
+  .wa-link {
+    color: #25D366;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .wa-link:hover { text-decoration: underline; }
+
+  /* SCROLLBAR SPACE */
+  .spacer { height: 6px; }
+
+  /* Responsive tweak */
+  @media (max-height: 700px) {
+    .app-wrapper { height: 98vh; }
+  }
+</style>
+</head>
+<body>
+<div class="app-wrapper">
+
+  <!-- HEADER -->
+  <div class="chat-header">
+    <div class="header-avatar">🌿</div>
+    <div class="header-info">
+      <h1>The Ordinary Ghana</h1>
+      <p><span class="online-dot"></span> Online · Skincare Assistant</p>
+    </div>
+    <div class="header-badge">Live</div>
+  </div>
+
+  <!-- CHAT BODY -->
+  <div class="chat-body" id="chatBody"></div>
+
+  <!-- INPUT AREA -->
+  <div class="chat-footer">
+    <input class="chat-input" id="chatInput" type="text" placeholder="Type a message…" autocomplete="off" />
+    <button class="send-btn" id="sendBtn" title="Send">➤</button>
+  </div>
+
+</div>
+
+<script>
+// ========= DATA =========
+const products = {
+  cleansers: [
+    { name: "Squalane Cleanser", benefit: "Removes makeup gently, ideal for sensitive skin", price: "GH₵110" }
+  ],
+  hydration: [
+    { name: "Hyaluronic Acid 2% + B5", benefit: "Deep hydration, plumps & smooths skin", price: "GH₵115" },
+    { name: "Natural Moisturizing Factors + HA", benefit: "Strengthens skin barrier, locks in moisture", price: "GH₵120" }
+  ],
+  acne: [
+    { name: "Niacinamide 10% + Zinc 1%", benefit: "Reduces oil, acne & enlarged pores", price: "GH₵120" },
+    { name: "Salicylic Acid 2% Solution", benefit: "Unclogs pores, treats active breakouts", price: "GH₵130" },
+    { name: "Salicylic Acid Masque", benefit: "Deep pore cleansing, weekly treatment", price: "GH₵135" }
+  ],
+  brightening: [
+    { name: "Alpha Arbutin 2% + HA", benefit: "Fades dark spots & hyperpigmentation", price: "GH₵125" },
+    { name: "Vitamin C Suspension 23% + HA", benefit: "Brightens dull skin, antioxidant boost", price: "GH₵140" },
+    { name: "Ascorbyl Glucoside Solution 12%", benefit: "Evens skin tone, gentle brightening", price: "GH₵135" }
+  ],
+  exfoliation: [
+    { name: "Glycolic Acid 7% Toning Solution", benefit: "Smooths texture, boosts glow", price: "GH₵120" },
+    { name: "AHA 30% + BHA 2% Peeling Solution", benefit: "Advanced deep exfoliation, resurfaces skin", price: "GH₵150" }
+  ],
+  antiaging: [
+    { name: "Matrixyl 10% + HA", benefit: "Firms skin, reduces sagging", price: "GH₵145" },
+    { name: "Argireline Solution 10%", benefit: "Reduces expression lines & fine wrinkles", price: "GH₵140" },
+    { name: "Multi-Peptide + Copper Peptides 1%", benefit: "Advanced anti-aging & skin renewal", price: "GH₵160" }
+  ],
+  eyecare: [
+    { name: "Caffeine Solution 5% + EGCG", benefit: "Reduces puffiness & dark circles", price: "GH₵125" }
+  ],
+  oils: [
+    { name: "100% Plant-Derived Squalane", benefit: "Lightweight hydration, locks in moisture", price: "GH₵130" },
+    { name: "Rosehip Seed Oil", benefit: "Repairs scars, brightens & nourishes", price: "GH₵140" }
+  ]
+};
+
+const skinConcernMap = {
+  acne: {
+    label: "🫧 Acne",
+    products: ["Niacinamide 10% + Zinc 1%", "Salicylic Acid 2% Solution", "Salicylic Acid Masque"],
+    reason: "Niacinamide controls oil and reduces inflammation, Salicylic Acid clears pores and treats active breakouts.",
+    routine: ["Cleanse with Squalane Cleanser", "Apply Salicylic Acid Solution (PM)", "Follow with Niacinamide (AM & PM)", "Moisturize with Natural Moisturizing Factors"]
+  },
+  darkspots: {
+    label: "🌑 Dark Spots",
+    products: ["Alpha Arbutin 2% + HA", "Vitamin C Suspension 23% + HA", "Ascorbyl Glucoside Solution 12%"],
+    reason: "Alpha Arbutin targets melanin production to fade spots. Vitamin C provides antioxidant brightening.",
+    routine: ["Apply Vitamin C in the morning", "Use Alpha Arbutin at night", "Always finish with SPF during the day"]
+  },
+  oilyskin: {
+    label: "💦 Oily Skin",
+    products: ["Niacinamide 10% + Zinc 1%", "Salicylic Acid 2% Solution", "Glycolic Acid 7% Toning Solution"],
+    reason: "Niacinamide + Zinc is the gold standard for sebum control. Salicylic Acid keeps pores clear.",
+    routine: ["Cleanse morning & evening", "Apply Niacinamide twice daily", "Use Glycolic Acid toner 3–4x per week (PM)"]
+  },
+  dryskin: {
+    label: "🌵 Dry Skin",
+    products: ["Hyaluronic Acid 2% + B5", "Natural Moisturizing Factors + HA", "100% Plant-Derived Squalane"],
+    reason: "HA draws water into the skin. Squalane seals moisture and prevents water loss.",
+    routine: ["Apply HA on damp skin", "Layer Natural Moisturizing Factors", "Seal with a drop of Squalane at night"]
+  },
+  dullskin: {
+    label: "✨ Dull Skin / Uneven Tone",
+    products: ["Glycolic Acid 7% Toning Solution", "Ascorbyl Glucoside Solution 12%", "Rosehip Seed Oil"],
+    reason: "Glycolic Acid removes dead skin cells for instant glow. Ascorbyl Glucoside gently brightens over time.",
+    routine: ["Use Glycolic Toner at night", "Apply Ascorbyl Glucoside in the morning", "Add Rosehip Oil as your final PM step"]
+  },
+  aging: {
+    label: "🕰️ Fine Lines / Aging",
+    products: ["Matrixyl 10% + HA", "Argireline Solution 10%", "Multi-Peptide + Copper Peptides 1%"],
+    reason: "Matrixyl stimulates collagen. Argireline relaxes expression lines. Copper Peptides repair and firm skin.",
+    routine: ["Apply Argireline around expression areas (AM)", "Use Matrixyl as your main serum", "Add Multi-Peptide serum at night"]
+  }
+};
+
+// ========= CHAT ENGINE =========
+const chatBody = document.getElementById('chatBody');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function scrollToBottom() {
+  setTimeout(() => { chatBody.scrollTop = chatBody.scrollHeight; }, 50);
+}
+
+function renderProductCard(p) {
+  return `<div class="product-card"><div class="p-name">✦ ${p.name}</div><div class="p-benefit">${p.benefit}</div><div class="p-price">${p.price}</div></div>`;
+}
+
+function addMessage(html, sender = 'bot', delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const row = document.createElement('div');
+      row.className = `msg-row ${sender}`;
+      const avatarChar = sender === 'bot' ? '🌿' : 'Y';
+      row.innerHTML = `
+        <div class="msg-avatar">${avatarChar}</div>
+        <div class="bubble">${html}</div>`;
+      chatBody.appendChild(row);
+      scrollToBottom();
+      resolve();
+    }, delay);
+  });
+}
+
+function addQuickReplies(buttons, delay = 0) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const container = document.createElement('div');
+      container.className = 'quick-replies';
+      buttons.forEach(btn => {
+        const b = document.createElement('button');
+        b.className = 'qr-btn';
+        b.textContent = btn.label;
+        b.onclick = () => {
+          container.remove();
+          handleUserInput(btn.label, btn.action);
+        };
+        container.appendChild(b);
+      });
+      chatBody.appendChild(container);
+      scrollToBottom();
+      resolve();
+    }, delay);
+  });
+}
+
+function showTyping(duration = 1200) {
+  return new Promise(resolve => {
+    const row = document.createElement('div');
+    row.className = 'typing-row';
+    row.id = 'typingIndicator';
+    row.innerHTML = `
+      <div class="msg-avatar">🌿</div>
+      <div class="typing-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>`;
+    chatBody.appendChild(row);
+    scrollToBottom();
+    setTimeout(() => {
+      const el = document.getElementById('typingIndicator');
+      if (el) el.remove();
+      resolve();
+    }, duration);
+  });
+}
+
+function addDateStamp() {
+  const stamp = document.createElement('div');
+  stamp.className = 'date-stamp';
+  const now = new Date();
+  stamp.textContent = now.toLocaleDateString('en-GH', { weekday:'long', day:'numeric', month:'long' });
+  chatBody.appendChild(stamp);
+}
+
+// ========= MAIN MENU =========
+async function showMainMenu(greeting = '') {
+  if (greeting) await addMessage(greeting, 'bot');
+  await addQuickReplies([
+    { label: '🧴 View Products', action: 'VIEW_PRODUCTS' },
+    { label: '🧠 Skin Concerns', action: 'SKIN_CONCERNS' },
+    { label: '💰 Prices & Discounts', action: 'PRICES' },
+    { label: '🚚 Delivery Info', action: 'DELIVERY' },
+    { label: '💳 Payment Methods', action: 'PAYMENT' },
+    { label: '📍 Location', action: 'LOCATION' },
+    { label: '📞 Contact / WhatsApp', action: 'CONTACT' }
+  ], 100);
+}
+
+// ========= RESPONSE HANDLERS =========
+const handlers = {
+
+  async VIEW_PRODUCTS() {
+    await showTyping(1000);
+    await addMessage(`<strong>🧴 Our Product Range</strong><br>Browse by category below. All products are authentic The Ordinary.`, 'bot');
+    await addQuickReplies([
+      { label: '🧼 Cleansers', action: 'CAT_cleansers' },
+      { label: '💧 Hydration', action: 'CAT_hydration' },
+      { label: '🫧 Acne / Oily Skin', action: 'CAT_acne' },
+      { label: '✨ Brightening', action: 'CAT_brightening' },
+      { label: '🧹 Exfoliation', action: 'CAT_exfoliation' },
+      { label: '🕰️ Anti-Aging', action: 'CAT_antiaging' },
+      { label: '👁️ Eye Care', action: 'CAT_eyecare' },
+      { label: '🫙 Oils', action: 'CAT_oils' },
+      { label: '⬅️ Back to Menu', action: 'MAIN_MENU' }
+    ], 200);
+  },
+
+  async SKIN_CONCERNS() {
+    await showTyping(900);
+    await addMessage(`<strong>🧠 What's your main skin concern?</strong><br>I'll recommend the best products for your skin type.`, 'bot');
+    await addQuickReplies(
+      Object.entries(skinConcernMap).map(([key, val]) => ({
+        label: val.label,
+        action: 'CONCERN_' + key
+      })).concat([{ label: '⬅️ Back to Menu', action: 'MAIN_MENU' }]),
+      200
+    );
+  },
+
+  async PRICES() {
+    await showTyping(1100);
+    const allProducts = Object.values(products).flat();
+    let html = `<strong>💰 Product Prices</strong><hr>`;
+    allProducts.forEach(p => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px;"><span>${p.name}</span><span class="price-tag">${p.price}</span></div>`;
+    });
+    html += `<hr><div style="background:var(--petal);border-radius:10px;padding:10px;margin-top:6px;font-size:13px;color:var(--deep-rose);">🎉 <strong>Buy 2 or more products</strong> and get a <strong>10% discount</strong> automatically applied!</div>`;
+    await addMessage(html, 'bot');
+    await addQuickReplies([{ label: '⬅️ Back to Menu', action: 'MAIN_MENU' }], 200);
+  },
+
+  async DELIVERY() {
+    await showTyping(900);
+    await addMessage(`<strong>🚚 Delivery Information</strong><hr>
+      <div class="routine-step"><div class="step-num">📍</div><div><strong>Accra</strong><br>Same-day delivery available</div></div>
+      <div class="routine-step"><div class="step-num">🗺️</div><div><strong>Outside Accra</strong><br>1–2 business days</div></div>
+      <hr>
+      <div style="font-size:13px;"><strong>🕐 Working Hours</strong><br>
+      Mon – Sat: 9:00 AM – 7:00 PM<br>
+      Sunday: Closed</div>`, 'bot');
+    await addQuickReplies([{ label: '⬅️ Back to Menu', action: 'MAIN_MENU' }], 200);
+  },
+
+  async PAYMENT() {
+    await showTyping(800);
+    await addMessage(`<strong>💳 Payment Methods</strong><hr>
+      <div class="routine-step"><div class="step-num">💵</div><div><strong>Cash</strong><br>Pay on delivery or in-store</div></div>
+      <div class="routine-step"><div class="step-num">📱</div><div><strong>MTN Mobile Money</strong><br>Fast & secure mobile payment</div></div>
+      <div class="routine-step"><div class="step-num">📱</div><div><strong>Telecel Cash</strong><br>Convenient mobile transfer</div></div>`, 'bot');
+    await addQuickReplies([{ label: '⬅️ Back to Menu', action: 'MAIN_MENU' }], 200);
+  },
+
+  async LOCATION() {
+    await showTyping(700);
+    await addMessage(`<strong>📍 Find Us</strong><hr>
+      <div style="font-size:13.5px;line-height:1.8;">
+      🏙️ <strong>Accra, Ghana</strong><br>
+      Contact us on WhatsApp for our exact pickup location or to arrange delivery to your area.
+      </div>`, 'bot');
+    await addQuickReplies([
+      { label: '📞 WhatsApp Us', action: 'CONTACT' },
+      { label: '⬅️ Back to Menu', action: 'MAIN_MENU' }
+    ], 200);
+  },
+
+  async CONTACT() {
+    await showTyping(800);
+    await addMessage(`<strong>📞 Contact Us</strong><hr>
+      We'd love to hear from you! Chat with us directly on WhatsApp for orders, questions, or skin advice.<br><br>
+      <div style="background:var(--petal);border-radius:12px;padding:12px 14px;text-align:center;">
+        <div style="font-size:22px;margin-bottom:4px;">💬</div>
+        <div style="font-size:13px;color:var(--muted);">WhatsApp</div>
+        <a class="wa-link" href="https://wa.me/233556279355" target="_blank" style="font-size:16px;display:block;margin-top:4px;">0556 279 355</a>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px;text-align:center;">Mon – Sat · 9 AM – 7 PM</div>`, 'bot');
+    await addQuickReplies([{ label: '⬅️ Back to Menu', action: 'MAIN_MENU' }], 200);
+  },
+
+  async MAIN_MENU() {
+    await showTyping(600);
+    await showMainMenu('How else can I help you today? 😊');
+  }
+};
+
+// Category handler
+async function handleCategory(key) {
+  const categoryNames = {
+    cleansers: '🧼 Cleansers',
+    hydration: '💧 Hydration',
+    acne: '🫧 Acne / Oily Skin',
+    brightening: '✨ Brightening & Dark Spots',
+    exfoliation: '🧹 Exfoliation',
+    antiaging: '🕰️ Anti-Aging',
+    eyecare: '👁️ Eye Care',
+    oils: '🫙 Oils'
+  };
+  await showTyping(1000);
+  const items = products[key];
+  let html = `<strong>${categoryNames[key]}</strong><hr>`;
+  items.forEach(p => { html += renderProductCard(p); });
+  await addMessage(html, 'bot');
+  await addQuickReplies([
+    { label: '🛍️ More Categories', action: 'VIEW_PRODUCTS' },
+    { label: '⬅️ Back to Menu', action: 'MAIN_MENU' }
+  ], 200);
+}
+
+// Skin concern handler
+async function handleConcern(key) {
+  const concern = skinConcernMap[key];
+  if (!concern) return;
+  await showTyping(1400);
+  const allProds = Object.values(products).flat();
+  const matched = allProds.filter(p => concern.products.includes(p.name));
+  let html = `<strong>Recommendations for ${concern.label}</strong><hr>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">💡 ${concern.reason}</div>`;
+  matched.forEach(p => { html += renderProductCard(p); });
+  html += `<hr><div style="font-size:13px;"><strong>✦ Simple Routine</strong></div>`;
+  concern.routine.forEach((step, i) => {
+    html += `<div class="routine-step"><div class="step-num">${i+1}</div><div>${step}</div></div>`;
+  });
+  await addMessage(html, 'bot');
+  await addQuickReplies([
+    { label: '🧠 Other Concerns', action: 'SKIN_CONCERNS' },
+    { label: '💰 See Prices', action: 'PRICES' },
+    { label: '⬅️ Main Menu', action: 'MAIN_MENU' }
+  ], 200);
+}
+
+// ========= INPUT HANDLER =========
+async function handleUserInput(displayText, action) {
+  // Show user message
+  await addMessage(displayText, 'user');
+
+  if (action === 'MAIN_MENU') { await handlers.MAIN_MENU(); return; }
+  if (action && action.startsWith('CAT_')) { await handleCategory(action.replace('CAT_', '')); return; }
+  if (action && action.startsWith('CONCERN_')) { await handleConcern(action.replace('CONCERN_', '')); return; }
+  if (action && handlers[action]) { await handlers[action](); return; }
+
+  // Free-text fallback
+  const lower = displayText.toLowerCase();
+  if (lower.includes('product') || lower.includes('catalogue') || lower.includes('catalog')) {
+    await handlers.VIEW_PRODUCTS(); return;
+  }
+  if (lower.includes('concern') || lower.includes('skin') || lower.includes('acne') || lower.includes('dry') || lower.includes('oily')) {
+    await handlers.SKIN_CONCERNS(); return;
+  }
+  if (lower.includes('price') || lower.includes('cost') || lower.includes('discount')) {
+    await handlers.PRICES(); return;
+  }
+  if (lower.includes('deliver') || lower.includes('shipping')) {
+    await handlers.DELIVERY(); return;
+  }
+  if (lower.includes('pay') || lower.includes('momo') || lower.includes('mobile money')) {
+    await handlers.PAYMENT(); return;
+  }
+  if (lower.includes('location') || lower.includes('address') || lower.includes('where')) {
+    await handlers.LOCATION(); return;
+  }
+  if (lower.includes('contact') || lower.includes('whatsapp') || lower.includes('call')) {
+    await handlers.CONTACT(); return;
+  }
+  if (lower.includes('hi') || lower.includes('hello') || lower.includes('hey')) {
+    await showTyping(800);
+    await showMainMenu('Hi there! 👋 Great to have you here. How can I help you today?');
+    return;
+  }
+
+  // Default
+  await showTyping(900);
+  await addMessage(`I didn't quite catch that, but I'm here to help! 🌿 Please choose from the options below.`, 'bot');
+  await showMainMenu();
+}
+
+// Send button & enter key
+sendBtn.onclick = () => {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  chatInput.value = '';
+  handleUserInput(text, null);
+};
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendBtn.click();
+});
+
+// ========= INIT =========
+async function init() {
+  addDateStamp();
+  await showTyping(800);
+  await addMessage(`Hi 👋 Welcome to <strong>The Ordinary Ghana</strong>!<br>I'm here to help you find the perfect skincare products for your skin.<br><br>What would you like to do today?`, 'bot');
+  await showMainMenu();
+}
+
+init();
+</script>
+</body>
+</html>
